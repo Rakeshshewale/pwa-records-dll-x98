@@ -1,4 +1,7 @@
 {
+  "content_security_policy": {
+  "extension_pages": "script-src 'self' https://script.google.com; connect-src 'self' https://script.google.com"
+}
   "name": "Daily Expense Tracker",
   "short_name": "ExpenseApp",
   "start_url": "index.html",
