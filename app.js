@@ -30,8 +30,7 @@ document.getElementById("expenseForm").addEventListener("submit", async function
       expenseMode,
       amount: parseFloat(amount), // Ensure number type
       additionalInfo,
-      category,
-      categoryValue
+      [category]: categoryValue
     };
 
     console.log("Submitting payload:", payload); // Debug log
