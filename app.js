@@ -1,69 +1,77 @@
-// [Previous categoryOptions and event listener code remains exactly the same...]
+// Simple category options
+const categoryOptions = {
+  "Food": ["Dining out", "Groceries", "Snacks"],
+  "Shopping": ["Amazon", "Electronics", "Clothing"],
+  "Transportation": ["Cab", "Public Transport", "Fuel"]
+};
 
-// Handle form submission
-document.getElementById("expenseForm").addEventListener("submit", async function (e) {
-  e.preventDefault();
+// Update category details dropdown
+document.getElementById("category").addEventListener("change", function() {
+  const category = this.value;
+  const detailSelect = document.getElementById("categoryValue");
   
-  const submitBtn = document.querySelector("#expenseForm button[type='submit']");
-  const resultDiv = document.getElementById("result");
-
-  try {
-    // Get form values
-    const transactionType = document.querySelector("input[name='transactionType']:checked")?.value;
-    const expenseMode = document.querySelector("input[name='expenseMode']:checked")?.value || "";
-    const amount = document.querySelector("input[name='amount']").value;
-    const category = document.getElementById("category").value;
-    const categoryValue = document.getElementById("categoryValue").value;
-    const additionalInfo = document.querySelector("input[name='additionalInfo']").value || "";
-
-    // Validate
-    if (!transactionType || !amount) {
-      resultDiv.textContent = "Transaction type and amount are required.";
-      resultDiv.style.color = "red";
-      return;
-    }
-
-    // Prepare payload
-    const payload = {
-      authToken: "Rakesh9869",
-      transactionType,
-      expenseMode,
-      amount: parseFloat(amount), // Ensure number type
-      additionalInfo,
-      [category]: categoryValue
-    };
-
-    console.log("Submitting payload:", payload); // Debug log
-
-    // Submit
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Submitting...";
-    
-    const response = await fetch("https://script.google.com/macros/s/AKfycbztTpELMxRl8SMYUpMHxDnDKkzO36En5LvJ0gMwmZA5LpO9ZY2QChCKKZJXqL5AFaYM/exec", {
-      method: "POST",
-      body: JSON.stringify(payload),
-      headers: { "Content-Type": "application/json" }
+  detailSelect.innerHTML = '<option value="">-- Select --</option>';
+  
+  if (category && categoryOptions[category]) {
+    categoryOptions[category].forEach(item => {
+      const option = document.createElement("option");
+      option.value = item;
+      option.textContent = item;
+      detailSelect.appendChild(option);
     });
-
-    const result = await response.json();
-    console.log("Server response:", result); // Debug log
-
-    if (result.status === "error") {
-      throw new Error(result.message || "Server rejected the submission");
-    }
-
-    // Success
-    resultDiv.textContent = "Entry submitted successfully!";
-    resultDiv.style.color = "green";
-    document.getElementById("expenseForm").reset();
-    document.getElementById("categoryValue").innerHTML = "<option>-- Select Category First --</option>";
-
-  } catch (err) {
-    console.error("Submission error:", err);
-    resultDiv.textContent = err.message || "Error submitting entry. Please try again.";
-    resultDiv.style.color = "red";
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = "Submit";
   }
 });
+
+// Form submission
+document.getElementById("expenseForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  
+  const payload = {
+    authToken: "Rakesh9869",
+    transactionType: document.getElementById("transactionType").value,
+    expenseMode: document.getElementById("expenseMode").value || "",
+    amount: document.getElementById("amount").value,
+    category: document.getElementById("category").value,
+    categoryValue: document.getElementById("categoryValue").value,
+    additionalInfo: document.getElementById("additionalInfo").value || ""
+  };
+
+  // Basic validation
+  if (!payload.transactionType || !payload.amount || !payload.category || !payload.categoryValue) {
+    showResult("Please fill all required fields", "error");
+    return;
+  }
+
+  try {
+    showResult("Submitting...", "processing");
+    
+    const response = await fetch(
+      "https://script.google.com/macros/s/AKfycbztTpELMxRl8SMYUpMHxDnDKkzO36En5LvJ0gMwmZA5LpO9ZY2QChCKKZJXqL5AFaYM/exec", 
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const result = await response.json();
+    
+    if (result.status === "error") {
+      throw new Error(result.message);
+    }
+    
+    showResult("Entry saved successfully!", "success");
+    document.getElementById("expenseForm").reset();
+    document.getElementById("categoryValue").innerHTML = '<option value="">-- Select --</option>';
+    
+  } catch (error) {
+    showResult("Error: " + error.message, "error");
+    console.error("Submission error:", error);
+  }
+});
+
+function showResult(message, type) {
+  const resultDiv = document.getElementById("result");
+  resultDiv.textContent = message;
+  resultDiv.style.color = type === "error" ? "red" : type === "success" ? "green" : "blue";
+}
