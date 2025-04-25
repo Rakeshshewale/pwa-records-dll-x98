@@ -64,6 +64,7 @@ document.getElementById('expenseForm').addEventListener('submit', async (e) => {
     // Send to Google Script
     const response = await fetch('https://script.google.com/macros/s/AKfycbxfnsjylsIyAM39N1-WMvxOer6DMuNpoA6A4cBwVy4efqkxyBAeoNlhxaaVhWmNmSPr/exec', {
       method: 'POST',
+      mode: "no-cors",
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
     });
