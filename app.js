@@ -1,69 +1,103 @@
-// [Previous categoryOptions and event listener code remains exactly the same...]
+// Category options mapping
+const categoryOptions = {
+  "Shopping": ["Amazon", "Shopping mart", "Electronics", "Clothing", "Other"],
+  "Food": ["Dining out", "Snacks", "Food deliveries", "Groceries", "Fruit"],
+  "Transportation": ["Public transport", "Cab", "Flight/Hotel", "Rental vehicle", "Other"],
+  "Bills": ["Electricity", "Rent", "Phone bills", "Cable", "Other"],
+  "Entertainment": ["Ytube+", "Apple account", "Outings", "Movies", "Other"],
+  "Personal care": ["Medical", "Hair saloon spa", "Cosmetics", "Dr appointments", "Other"],
+  "Insurance": ["LIC", "Health Insurance", "Term Insurance"],
+  "Other Expenses": ["Splitwise pay", "Laundry", "Career", "Vacation", "Other"],
+  "Money transfer": [
+    "Salary to Kotak", "Salary to ICICI", "ICICI to Kotak", "Kotak to ICICI", "Cash withdrawal",
+    "Salary", "Investment", "Other income", "E-wallet topup"
+  ],
+  "Opening balance": ["E-wallet balance", "ICICI balance", "HDFC balance", "Kotak Balance", "Cash"]
+};
+
+// Initialize category dropdown
+document.getElementById('category').addEventListener('change', function() {
+  const category = this.value;
+  const subcategorySelect = document.getElementById('categoryValue');
+  subcategorySelect.innerHTML = '<option value="">-- Select --</option>';
+
+  if (category && categoryOptions[category]) {
+    categoryOptions[category].forEach(item => {
+      const option = document.createElement('option');
+      option.value = item;
+      option.textContent = item;
+      subcategorySelect.appendChild(option);
+    });
+  }
+});
 
 // Handle form submission
-document.getElementById("expenseForm").addEventListener("submit", async function (e) {
+document.getElementById('expenseForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   
-  const submitBtn = document.querySelector("#expenseForm button[type='submit']");
-  const resultDiv = document.getElementById("result");
-
+  const submitBtn = document.querySelector('#expenseForm button[type="submit"]');
+  const resultDiv = document.getElementById('result');
+  
   try {
     // Get form values
-    const transactionType = document.querySelector("input[name='transactionType']:checked")?.value;
-    const expenseMode = document.querySelector("input[name='expenseMode']:checked")?.value || "";
-    const amount = document.querySelector("input[name='amount']").value;
-    const category = document.getElementById("category").value;
-    const categoryValue = document.getElementById("categoryValue").value;
-    const additionalInfo = document.querySelector("input[name='additionalInfo']").value || "";
+    const formData = {
+      authToken: "Rakesh9869",
+      transactionType: document.querySelector('input[name="transactionType"]:checked')?.value,
+      expenseMode: document.querySelector('input[name="expenseMode"]:checked')?.value || '',
+      amount: document.getElementById('amount').value,
+      category: document.getElementById('category').value,
+      categoryValue: document.getElementById('categoryValue').value,
+      additionalInfo: document.getElementById('additionalInfo').value || ''
+    };
 
-    // Validate
-    if (!transactionType || !amount) {
-      resultDiv.textContent = "Transaction type and amount are required.";
-      resultDiv.style.color = "red";
+    // Validate required fields
+    if (!formData.transactionType || !formData.amount || !formData.category || !formData.categoryValue) {
+      showMessage('All required fields must be filled', 'error');
       return;
     }
 
-    // Prepare payload
-    const payload = {
-      authToken: "Rakesh9869",
-      transactionType,
-      expenseMode,
-      amount: parseFloat(amount), // Ensure number type
-      additionalInfo,
-      [category]: categoryValue
-    };
-
-    console.log("Submitting payload:", payload); // Debug log
-
-    // Submit
+    // Show loading state
     submitBtn.disabled = true;
-    submitBtn.textContent = "Submitting...";
-    
-    const response = await fetch("https://script.google.com/macros/s/AKfycbztTpELMxRl8SMYUpMHxDnDKkzO36En5LvJ0gMwmZA5LpO9ZY2QChCKKZJXqL5AFaYM/exec", {
-      method: "POST",
-      body: JSON.stringify(payload),
-      headers: { "Content-Type": "application/json" }
+    submitBtn.textContent = 'Submitting...';
+    resultDiv.style.display = 'none';
+
+    // Send to Google Script
+    const response = await fetch('YOUR_GOOGLE_SCRIPT_URL', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
     });
 
-    const result = await response.json();
-    console.log("Server response:", result); // Debug log
-
-    if (result.status === "error") {
-      throw new Error(result.message || "Server rejected the submission");
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Server error');
     }
 
-    // Success
-    resultDiv.textContent = "Entry submitted successfully!";
-    resultDiv.style.color = "green";
-    document.getElementById("expenseForm").reset();
-    document.getElementById("categoryValue").innerHTML = "<option>-- Select Category First --</option>";
+    const result = await response.json();
+    showMessage(result.message || 'Entry saved successfully!', 'success');
+    
+    // Reset form
+    document.getElementById('expenseForm').reset();
+    document.getElementById('categoryValue').innerHTML = '<option value="">-- Select Category First --</option>';
 
-  } catch (err) {
-    console.error("Submission error:", err);
-    resultDiv.textContent = err.message || "Error submitting entry. Please try again.";
-    resultDiv.style.color = "red";
+  } catch (error) {
+    showMessage(error.message || 'Failed to save entry. Please try again.', 'error');
+    console.error('Submission error:', error);
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = "Submit";
+    submitBtn.textContent = 'Submit';
   }
 });
+
+// Helper function to show messages
+function showMessage(message, type) {
+  const resultDiv = document.getElementById('result');
+  resultDiv.textContent = message;
+  resultDiv.className = `alert ${type}`;
+  resultDiv.style.display = 'block';
+
+  // Hide message after 5 seconds
+  setTimeout(() => {
+    resultDiv.style.display = 'none';
+  }, 5000);
+}
