@@ -62,7 +62,7 @@ document.getElementById('expenseForm').addEventListener('submit', async (e) => {
     resultDiv.style.display = 'none';
 
     // Send to Google Script
-    const response = await fetch('YOUR_GOOGLE_SCRIPT_URL', {
+    const response = await fetch('https://script.google.com/macros/s/AKfycbxfnsjylsIyAM39N1-WMvxOer6DMuNpoA6A4cBwVy4efqkxyBAeoNlhxaaVhWmNmSPr/exec', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
