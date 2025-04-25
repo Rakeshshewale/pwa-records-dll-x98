@@ -1,67 +1,71 @@
-// Category options mapping
-const categoryOptions = {
-  "Shopping": ["Amazon", "Shopping mart", "Electronics", "Clothing", "Other"],
-  "Food": ["Dining out", "Snacks", "Food deliveries", "Groceries", "Fruit"],
-  "Transportation": ["Public transport", "Cab", "Flight/Hotel", "Rental vehicle", "Other"],
-  "Bills": ["Electricity", "Rent", "Phone bills", "Cable", "Other"],
-  "Entertainment": ["Ytube+", "Apple account", "Outings", "Movies", "Other"],
-  "Personal care": ["Medical", "Hair saloon spa", "Cosmetics", "Dr appointments", "Other"],
-  "Insurance": ["LIC", "Health Insurance", "Term Insurance"],
-  "Other Expenses": ["Splitwise pay", "Laundry", "Career", "Vacation", "Other"],
-  "Money transfer": [
-    "Salary to Kotak", "Salary to ICICI", "ICICI to Kotak", "Kotak to ICICI", "Cash withdrawal",
-    "Salary", "Investment", "Other income", "E-wallet topup"
-  ],
-  "Opening balance": ["E-wallet balance", "ICICI balance", "HDFC balance", "Kotak Balance", "Cash"]
-};
+// Expense Tracker Frontend Logic (app.js)
+document.addEventListener('DOMContentLoaded', () => {
+  const authToken = "Rakesh9869";
 
-// Populate category dropdown dynamically
-const categorySelect = document.getElementById('category');
-Object.keys(categoryOptions).forEach(category => {
-  const option = document.createElement('option');
-  option.value = category;
-  option.textContent = category;
-  categorySelect.appendChild(option);
-});
+  // Category options mapping
+  const categoryOptions = {
+    "Shopping": ["Amazon", "Shopping mart", "Electronics", "Clothing", "Other"],
+    "Food": ["Dining out", "Snacks", "Food deliveries", "Groceries", "Fruit"],
+    "Transportation": ["Public transport", "Cab", "Flight/Hotel", "Rental vehicle", "Other"],
+    "Bills": ["Electricity", "Rent", "Phone bills", "Cable", "Other"],
+    "Entertainment": ["Ytube+", "Apple account", "Outings", "Movies", "Other"],
+    "Personal care": ["Medical", "Hair saloon spa", "Cosmetics", "Dr appointments", "Other"],
+    "Insurance": ["LIC", "Health Insurance", "Term Insurance"],
+    "Other Expenses": ["Splitwise pay", "Laundry", "Career", "Vacation", "Other"],
+    "Money transfer": [
+      "Salary to Kotak", "ICICI to Kotak", "Kotak to ICICI", "Cash withdrawal", "Salary",
+      "Investment", "Other income", "E-wallet topup"
+    ],
+    "Opening balance": ["E-wallet balance", "ICICI balance", "HDFC balance", "Kotak Balance", "Cash"]
+  };
 
-// Initialize category dropdown
-document.getElementById('category').addEventListener('change', function() {
-  const category = this.value;
-  const subcategorySelect = document.getElementById('categoryValue');
-  subcategorySelect.innerHTML = '<option value="">-- Select --</option>';
-
-  if (category && categoryOptions[category]) {
-    categoryOptions[category].forEach(item => {
-      const option = document.createElement('option');
-      option.value = item;
-      option.textContent = item;
-      subcategorySelect.appendChild(option);
-    });
-  }
-});
-
-// Handle form submission
-document.getElementById('expenseForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  const submitBtn = document.querySelector('#expenseForm button[type="submit"]');
+  // DOM elements
+  const categorySelect = document.getElementById('category');
+  const categoryValueSelect = document.getElementById('categoryValue');
+  const expenseForm = document.getElementById('expenseForm');
   const resultDiv = document.getElementById('result');
-  
-  try {
-    // Get form values
+  const submitBtn = expenseForm.querySelector('button[type="submit"]');
+
+  // Populate category dropdown
+  Object.keys(categoryOptions).forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat;
+    categorySelect.appendChild(opt);
+  });
+
+  // Populate subcategory based on category
+  categorySelect.addEventListener('change', () => {
+    const selected = categorySelect.value;
+    categoryValueSelect.innerHTML = '<option value="">-- Select --</option>';
+    if (categoryOptions[selected]) {
+      categoryOptions[selected].forEach(val => {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        categoryValueSelect.appendChild(opt);
+      });
+    }
+  });
+
+  // Handle form submission
+  expenseForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Collect form data
     const formData = {
-      authToken: "Rakesh9869",
+      authToken,
       transactionType: document.querySelector('input[name="transactionType"]:checked')?.value,
       expenseMode: document.querySelector('input[name="expenseMode"]:checked')?.value || '',
+      category: categorySelect.value,
+      categoryValue: categoryValueSelect.value,
       amount: document.getElementById('amount').value,
-      category: document.getElementById('category').value,
-      categoryValue: document.getElementById('categoryValue').value,
       additionalInfo: document.getElementById('additionalInfo').value || ''
     };
 
     // Validate required fields
     if (!formData.transactionType || !formData.amount || !formData.category || !formData.categoryValue) {
-      showMessage('All required fields must be filled', 'error');
+      showMessage('Please fill all required fields.', 'error');
       return;
     }
 
@@ -70,44 +74,37 @@ document.getElementById('expenseForm').addEventListener('submit', async (e) => {
     submitBtn.textContent = 'Submitting...';
     resultDiv.style.display = 'none';
 
-    // Send to Google Script
-    const response = await fetch('https://script.google.com/macros/s/AKfycbxfnsjylsIyAM39N1-WMvxOer6DMuNpoA6A4cBwVy4efqkxyBAeoNlhxaaVhWmNmSPr/exec', {
-      method: 'POST',
-      mode: "no-cors",
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
-    });
+    try {
+      const response = await fetch('https://script.google.com/macros/s/AKfycbxfnsjylsIyAM39N1-WMvxOer6DMuNpoA6A4cBwVy4efqkxyBAeoNlhxaaVhWmNmSPr/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Server error');
+      const result = await response.json();
+      if (result.status === 'success') {
+        showMessage(result.message || 'Entry submitted successfully!', 'success');
+        expenseForm.reset();
+        categoryValueSelect.innerHTML = '<option value="">-- Select Category First --</option>';
+      } else {
+        showMessage(result.message || 'Server error', 'error');
+      }
+    } catch (err) {
+      console.error('Submission error:', err);
+      showMessage(err.message || 'Submission failed.', 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit';
     }
+  });
 
-    const result = await response.json();
-    showMessage(result.message || 'Entry saved successfully!', 'success');
-    
-    // Reset form
-    document.getElementById('expenseForm').reset();
-    document.getElementById('categoryValue').innerHTML = '<option value="">-- Select Category First --</option>';
-
-  } catch (error) {
-    showMessage(error.message || 'Failed to save entry. Please try again.', 'error');
-    console.error('Submission error:', error);
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Submit';
+  // Helper function to display messages
+  function showMessage(msg, type) {
+    resultDiv.textContent = msg;
+    resultDiv.className = type;
+    resultDiv.style.display = 'block';
+    setTimeout(() => {
+      resultDiv.style.display = 'none';
+    }, 5000);
   }
 });
-
-// Helper function to show messages
-function showMessage(message, type) {
-  const resultDiv = document.getElementById('result');
-  resultDiv.textContent = message;
-  resultDiv.className = `alert ${type}`;
-  resultDiv.style.display = 'block';
-
-  // Hide message after 5 seconds
-  setTimeout(() => {
-    resultDiv.style.display = 'none';
-  }, 5000);
-}
