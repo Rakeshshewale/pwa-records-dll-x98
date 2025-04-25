@@ -15,6 +15,15 @@ const categoryOptions = {
   "Opening balance": ["E-wallet balance", "ICICI balance", "HDFC balance", "Kotak Balance", "Cash"]
 };
 
+// Populate category dropdown dynamically
+const categorySelect = document.getElementById('category');
+Object.keys(categoryOptions).forEach(category => {
+  const option = document.createElement('option');
+  option.value = category;
+  option.textContent = category;
+  categorySelect.appendChild(option);
+});
+
 // Initialize category dropdown
 document.getElementById('category').addEventListener('change', function() {
   const category = this.value;
