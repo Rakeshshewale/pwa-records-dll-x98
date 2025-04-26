@@ -15,6 +15,22 @@ const categoryOptions = {
   "Opening balance": ["E-wallet balance", "ICICI balance", "HDFC balance", "Kotak Balance", "Cash"]
 };
 
+// Show/hide Expense Mode based on Transaction Type
+document.querySelectorAll("input[name='transactionType']").forEach((radio) => {
+  radio.addEventListener("change", function () {
+    const expenseModeSection = document.getElementById("expenseModeSection");
+    if (this.value === "Expense") {
+      expenseModeSection.style.display = "block";
+    } else {
+      expenseModeSection.style.display = "none";
+    }
+  });
+});
+
+// Initially hide Expense Mode (until user selects "Expense")
+document.getElementById("expenseModeSection").style.display = "none";
+
+
 // Handle transactionType change to adjust category options
 document.querySelectorAll("input[name='transactionType']").forEach(radio => {
   radio.addEventListener("change", function () {
