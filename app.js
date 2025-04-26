@@ -15,6 +15,51 @@ const categoryOptions = {
   "Opening balance": ["E-wallet balance", "ICICI balance", "HDFC balance", "Kotak Balance", "Cash"]
 };
 
+// Handle transactionType change to adjust category options
+document.querySelectorAll("input[name='transactionType']").forEach(radio => {
+  radio.addEventListener("change", function () {
+    const selectedTransaction = this.value;
+    const category = document.getElementById("category");
+    const categoryValue = document.getElementById("categoryValue");
+
+    category.innerHTML = "";
+    categoryValue.innerHTML = "";
+    category.disabled = false;
+    categoryValue.disabled = false;
+
+    if (selectedTransaction === "Expense") {
+      const expenseCategories = [
+        "Shopping", "Food", "Transportation", "Bills", "Entertainment",
+        "Personal care", "Insurance", "Other Expenses"
+      ];
+      expenseCategories.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        category.appendChild(opt);
+      });
+    } else if (selectedTransaction === "Money transfer") {
+      const transferCategories = ["Money transfer", "Opening balance"];
+      transferCategories.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        category.appendChild(opt);
+      });
+    } else if (selectedTransaction === "Credit card bill") {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "-- No category needed --";
+      category.appendChild(opt);
+      category.disabled = true;
+      categoryValue.disabled = true;
+    }
+
+    // Trigger categoryValue update
+    category.dispatchEvent(new Event('change'));
+  });
+});
+
 // Set up categoryValue options based on selected category
 document.getElementById("category").addEventListener("change", function () {
   const selected = this.value;
@@ -28,11 +73,13 @@ document.getElementById("category").addEventListener("change", function () {
       opt.textContent = item;
       subcategory.appendChild(opt);
     });
+    subcategory.disabled = false;
   } else {
     const opt = document.createElement("option");
     opt.value = "";
     opt.textContent = "-- Select Category First --";
     subcategory.appendChild(opt);
+    subcategory.disabled = true;
   }
 });
 
@@ -40,10 +87,10 @@ document.getElementById("category").addEventListener("change", function () {
 document.getElementById("expenseForm").addEventListener("submit", async function (e) {
   e.preventDefault();
 
-  const submitButton = document.querySelector("#submitButton"); // assuming your button has id="submitButton"
+  const submitButton = document.querySelector("#submitButton"); 
   submitButton.disabled = true;
   submitButton.textContent = "Submitting...";
-  
+
   const transactionType = document.querySelector("input[name='transactionType']:checked")?.value;
   const expenseMode = document.querySelector("input[name='expenseMode']:checked")?.value || "";
   const amount = document.querySelector("input[name='amount']").value;
@@ -59,7 +106,7 @@ document.getElementById("expenseForm").addEventListener("submit", async function
   }
 
   const payload = {
-    authToken: "Rakesh9869",  // Auth Token to prevent unauthorized access
+    authToken: "Rakesh9869",  
     transactionType,
     expenseMode,
     amount,
@@ -68,7 +115,6 @@ document.getElementById("expenseForm").addEventListener("submit", async function
     additionalInfo
   };
 
-  // Convert payload to application/x-www-form-urlencoded format
   const formData = new URLSearchParams();
   formData.append("authToken", payload.authToken);
   formData.append("transactionType", payload.transactionType);
@@ -81,13 +127,16 @@ document.getElementById("expenseForm").addEventListener("submit", async function
   try {
     const response = await fetch("https://script.google.com/macros/s/AKfycbx_wHyePe_GKAA9YBmpccIyPkYrKikyfosaWmhVJxZH1_MActOeD0IETvVIhnu2g_-O/exec", {
       method: "POST",
-      body: formData, // Sending data in application/x-www-form-urlencoded format
+      body: formData,
     });
 
     const result = await response.json();
     document.getElementById("result").textContent = result.message || "Entry submitted successfully.";
     document.getElementById("expenseForm").reset();
+    document.getElementById("category").innerHTML = "<option>-- Select Category --</option>";
     document.getElementById("categoryValue").innerHTML = "<option>-- Select Category First --</option>";
+    document.getElementById("category").disabled = false;
+    document.getElementById("categoryValue").disabled = false;
   } catch (err) {
     document.getElementById("result").textContent = "Error submitting entry. Try again.";
     console.error(err);
@@ -97,10 +146,13 @@ document.getElementById("expenseForm").addEventListener("submit", async function
     submitButton.textContent = "Submit";
   }
 });
+
 // Handle Clear button
 document.getElementById("clearButton").addEventListener("click", function () {
   document.getElementById("expenseForm").reset();
+  document.getElementById("category").innerHTML = "<option>-- Select Category --</option>";
   document.getElementById("categoryValue").innerHTML = "<option>-- Select Category First --</option>";
-  document.getElementById("result").textContent = ""; // Clear any previous messages
+  document.getElementById("category").disabled = false;
+  document.getElementById("categoryValue").disabled = false;
+  document.getElementById("result").textContent = "";
 });
-
