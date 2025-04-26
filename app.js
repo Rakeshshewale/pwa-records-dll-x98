@@ -68,7 +68,7 @@ document.getElementById("expenseForm").addEventListener("submit", async function
       mode: 'no-cors',
       body: JSON.stringify(payload),
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/x-www-form-urlencoded"
       }
     });
 
