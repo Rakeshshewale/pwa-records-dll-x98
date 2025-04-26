@@ -40,6 +40,10 @@ document.getElementById("category").addEventListener("change", function () {
 document.getElementById("expenseForm").addEventListener("submit", async function (e) {
   e.preventDefault();
 
+  const submitButton = document.querySelector("#submitButton"); // assuming your button has id="submitButton"
+  submitButton.disabled = true;
+  submitButton.textContent = "Submitting...";
+  
   const transactionType = document.querySelector("input[name='transactionType']:checked")?.value;
   const expenseMode = document.querySelector("input[name='expenseMode']:checked")?.value || "";
   const amount = document.querySelector("input[name='amount']").value;
@@ -49,6 +53,8 @@ document.getElementById("expenseForm").addEventListener("submit", async function
 
   if (!transactionType || !amount) {
     document.getElementById("result").textContent = "Transaction type and amount are required.";
+    submitButton.disabled = false;
+    submitButton.textContent = "Submit";
     return;
   }
 
@@ -85,5 +91,9 @@ document.getElementById("expenseForm").addEventListener("submit", async function
   } catch (err) {
     document.getElementById("result").textContent = "Error submitting entry. Try again.";
     console.error(err);
+  }
+  finally {
+    submitButton.disabled = false;
+    submitButton.textContent = "Submit";
   }
 });
