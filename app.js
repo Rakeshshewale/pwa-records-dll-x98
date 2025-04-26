@@ -53,7 +53,7 @@ document.getElementById("expenseForm").addEventListener("submit", async function
   }
 
   const payload = {
-    authToken: "Rakesh9869",
+    authToken: "Rakesh9869",  // Auth Token to prevent unauthorized access
     transactionType,
     expenseMode,
     amount,
@@ -62,14 +62,20 @@ document.getElementById("expenseForm").addEventListener("submit", async function
     additionalInfo
   };
 
+  // Convert payload to application/x-www-form-urlencoded format
+  const formData = new URLSearchParams();
+  formData.append("authToken", payload.authToken);
+  formData.append("transactionType", payload.transactionType);
+  formData.append("expenseMode", payload.expenseMode);
+  formData.append("amount", payload.amount);
+  formData.append("category", payload.category);
+  formData.append("categoryValue", payload.categoryValue);
+  formData.append("additionalInfo", payload.additionalInfo);
+
   try {
     const response = await fetch("https://script.google.com/macros/s/AKfycbx_wHyePe_GKAA9YBmpccIyPkYrKikyfosaWmhVJxZH1_MActOeD0IETvVIhnu2g_-O/exec", {
       method: "POST",
-      //mode: 'no-cors',
-      body: JSON.stringify(payload),
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      }
+      body: formData, // Sending data in application/x-www-form-urlencoded format
     });
 
     const result = await response.json();
