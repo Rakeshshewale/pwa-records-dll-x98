@@ -97,3 +97,10 @@ document.getElementById("expenseForm").addEventListener("submit", async function
     submitButton.textContent = "Submit";
   }
 });
+// Handle Clear button
+document.getElementById("clearButton").addEventListener("click", function () {
+  document.getElementById("expenseForm").reset();
+  document.getElementById("categoryValue").innerHTML = "<option>-- Select Category First --</option>";
+  document.getElementById("result").textContent = ""; // Clear any previous messages
+});
+
