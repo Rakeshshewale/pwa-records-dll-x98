@@ -57,8 +57,9 @@ document.getElementById("expenseForm").addEventListener("submit", async function
     transactionType,
     expenseMode,
     amount,
-    additionalInfo,
-    [category]: categoryValue
+    category,
+    categoryValue,
+    additionalInfo
   };
 
   try {
