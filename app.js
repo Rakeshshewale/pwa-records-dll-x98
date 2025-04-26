@@ -66,10 +66,14 @@ document.getElementById("expenseForm").addEventListener("submit", async function
     const response = await fetch("https://script.google.com/macros/s/AKfycbx_wHyePe_GKAA9YBmpccIyPkYrKikyfosaWmhVJxZH1_MActOeD0IETvVIhnu2g_-O/exec", {
       method: "POST",
       // mode: 'no-cors',
-      body: JSON.stringify(payload),
-      headers: {
+      // body: JSON.stringify(payload),
+      // headers: {
         "Content-Type": "application/json"
       }
+        headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: formData
     });
 
     const result = await response.json();
