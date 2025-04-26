@@ -1,77 +1,82 @@
-// Simple category options
+// Category options mapping
 const categoryOptions = {
-  "Food": ["Dining out", "Groceries", "Snacks"],
-  "Shopping": ["Amazon", "Electronics", "Clothing"],
-  "Transportation": ["Cab", "Public Transport", "Fuel"]
+  "Shopping": ["Amazon", "Shopping mart", "Electronics", "Clothing", "Other"],
+  "Food": ["Dining out", "Snacks", "Food deliveries", "Groceries", "Fruit"],
+  "Transportation": ["Public transport", "Cab", "Flight/Hotel", "Rental vehicle", "Other"],
+  "Bills": ["Electricity", "Rent", "Phone bills", "Cable", "Other"],
+  "Entertainment": ["Ytube+", "Apple account", "Outings", "Movies", "Other"],
+  "Personal care": ["Medical", "Hair saloon spa", "Cosmetics", "Dr appointments", "Other"],
+  "Insurance": ["LIC", "Health Insurance", "Term Insurance"],
+  "Other Expenses": ["Splitwise pay", "Laundry", "Career", "Vacation", "Other"],
+  "Money transfer": [
+    "Salary to Kotak", "Salary to ICICI", "ICICI to Kotak", "Kotak to ICICI", "Cash withdrawal",
+    "Salary", "Investment", "Other income", "E-wallet topup"
+  ],
+  "Opening balance": ["E-wallet balance", "ICICI balance", "HDFC balance", "Kotak Balance", "Cash"]
 };
 
-// Update category details dropdown
-document.getElementById("category").addEventListener("change", function() {
-  const category = this.value;
-  const detailSelect = document.getElementById("categoryValue");
-  
-  detailSelect.innerHTML = '<option value="">-- Select --</option>';
-  
-  if (category && categoryOptions[category]) {
-    categoryOptions[category].forEach(item => {
-      const option = document.createElement("option");
-      option.value = item;
-      option.textContent = item;
-      detailSelect.appendChild(option);
+// Set up categoryValue options based on selected category
+document.getElementById("category").addEventListener("change", function () {
+  const selected = this.value;
+  const subcategory = document.getElementById("categoryValue");
+  subcategory.innerHTML = "";
+
+  if (categoryOptions[selected]) {
+    categoryOptions[selected].forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item;
+      opt.textContent = item;
+      subcategory.appendChild(opt);
     });
+  } else {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "-- Select Category First --";
+    subcategory.appendChild(opt);
   }
 });
 
-// Form submission
-document.getElementById("expenseForm").addEventListener("submit", async function(e) {
+// Handle form submission
+document.getElementById("expenseForm").addEventListener("submit", async function (e) {
   e.preventDefault();
-  
-  const payload = {
-    authToken: "Rakesh9869",
-    transactionType: document.getElementById("transactionType").value,
-    expenseMode: document.getElementById("expenseMode").value || "",
-    amount: document.getElementById("amount").value,
-    category: document.getElementById("category").value,
-    categoryValue: document.getElementById("categoryValue").value,
-    additionalInfo: document.getElementById("additionalInfo").value || ""
-  };
 
-  // Basic validation
-  if (!payload.transactionType || !payload.amount || !payload.category || !payload.categoryValue) {
-    showResult("Please fill all required fields", "error");
+  const transactionType = document.querySelector("input[name='transactionType']:checked")?.value;
+  const expenseMode = document.querySelector("input[name='expenseMode']:checked")?.value || "";
+  const amount = document.querySelector("input[name='amount']").value;
+  const category = document.getElementById("category").value;
+  const categoryValue = document.getElementById("categoryValue").value;
+  const additionalInfo = document.querySelector("input[name='additionalInfo']").value || "";
+
+  if (!transactionType || !amount) {
+    document.getElementById("result").textContent = "Transaction type and amount are required.";
     return;
   }
 
+  const payload = {
+    authToken: "Rakesh9869",
+    transactionType,
+    expenseMode,
+    amount,
+    additionalInfo,
+    [category]: categoryValue
+  };
+
   try {
-    showResult("Submitting...", "processing");
-    
-    const response = await fetch(
-      "https://script.google.com/macros/s/AKfycbztTpELMxRl8SMYUpMHxDnDKkzO36En5LvJ0gMwmZA5LpO9ZY2QChCKKZJXqL5AFaYM/exec", 
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+    const response = await fetch("https://script.google.com/macros/s/AKfycbxfnsjylsIyAM39N1-WMvxOer6DMuNpoA6A4cBwVy4efqkxyBAeoNlhxaaVhWmNmSPr/exec", {
+      method: "POST",
+      mode: 'no-cors',
+      body: JSON.stringify(payload),
+      headers: {
+        "Content-Type": "application/json"
       }
-    );
+    });
 
     const result = await response.json();
-    
-    if (result.status === "error") {
-      throw new Error(result.message);
-    }
-    
-    showResult("Entry saved successfully!", "success");
+    document.getElementById("result").textContent = result.message || "Entry submitted successfully.";
     document.getElementById("expenseForm").reset();
-    document.getElementById("categoryValue").innerHTML = '<option value="">-- Select --</option>';
-    
-  } catch (error) {
-    showResult("Error: " + error.message, "error");
-    console.error("Submission error:", error);
+    document.getElementById("categoryValue").innerHTML = "<option>-- Select Category First --</option>";
+  } catch (err) {
+    document.getElementById("result").textContent = "Error submitting entry. Try again.";
+    console.error(err);
   }
 });
-
-function showResult(message, type) {
-  const resultDiv = document.getElementById("result");
-  resultDiv.textContent = message;
-  resultDiv.style.color = type === "error" ? "red" : type === "success" ? "green" : "blue";
-}
