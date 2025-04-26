@@ -70,7 +70,7 @@ document.getElementById("expenseForm").addEventListener("submit", async function
         headers: {
         "Content-Type": "application/x-www-form-urlencoded"
       },
-      body: formData
+      body: payload
     });
 
     const result = await response.json();
