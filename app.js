@@ -15,90 +15,160 @@ const categoryOptions = {
   "Opening balance": ["E-wallet balance", "ICICI balance", "HDFC balance", "Kotak Balance", "Cash"]
 };
 
-// Initialize category dropdown
-document.getElementById('category').addEventListener('change', function() {
-  const category = this.value;
-  const subcategorySelect = document.getElementById('categoryValue');
-  subcategorySelect.innerHTML = '<option value="">-- Select --</option>';
+// Show/hide Expense Mode based on Transaction Type
+document.querySelectorAll("input[name='transactionType']").forEach((radio) => {
+  radio.addEventListener("change", function () {
+    const expenseModeSection = document.getElementById("expenseModeSection");
+    if (this.value === "Expense") {
+      expenseModeSection.style.display = "block";
+    } else {
+      expenseModeSection.style.display = "none";
+    }
+  });
+});
 
-  if (category && categoryOptions[category]) {
-    categoryOptions[category].forEach(item => {
-      const option = document.createElement('option');
-      option.value = item;
-      option.textContent = item;
-      subcategorySelect.appendChild(option);
+// Initially hide Expense Mode (until user selects "Expense")
+document.getElementById("expenseModeSection").style.display = "none";
+
+
+// Handle transactionType change to adjust category options
+document.querySelectorAll("input[name='transactionType']").forEach(radio => {
+  radio.addEventListener("change", function () {
+    const selectedTransaction = this.value;
+    const category = document.getElementById("category");
+    const categoryValue = document.getElementById("categoryValue");
+
+    category.innerHTML = "";
+    categoryValue.innerHTML = "";
+    category.disabled = false;
+    categoryValue.disabled = false;
+
+    if (selectedTransaction === "Expense") {
+      const expenseCategories = [
+        "Shopping", "Food", "Transportation", "Bills", "Entertainment",
+        "Personal care", "Insurance", "Other Expenses"
+      ];
+      expenseCategories.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        category.appendChild(opt);
+      });
+    } else if (selectedTransaction === "Money transfer") {
+      const transferCategories = ["Money transfer", "Opening balance"];
+      transferCategories.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        category.appendChild(opt);
+      });
+    } else if (selectedTransaction === "Credit card bill") {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "-- No category needed --";
+      category.appendChild(opt);
+      category.disabled = true;
+      categoryValue.disabled = true;
+    }
+
+    // Trigger categoryValue update
+    category.dispatchEvent(new Event('change'));
+  });
+});
+
+// Set up categoryValue options based on selected category
+document.getElementById("category").addEventListener("change", function () {
+  const selected = this.value;
+  const subcategory = document.getElementById("categoryValue");
+  subcategory.innerHTML = "";
+
+  if (categoryOptions[selected]) {
+    categoryOptions[selected].forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item;
+      opt.textContent = item;
+      subcategory.appendChild(opt);
     });
+    subcategory.disabled = false;
+  } else {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "-- Select Category First --";
+    subcategory.appendChild(opt);
+    subcategory.disabled = true;
   }
 });
 
 // Handle form submission
-document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+document.getElementById("expenseForm").addEventListener("submit", async function (e) {
   e.preventDefault();
-  
-  const submitBtn = document.querySelector('#expenseForm button[type="submit"]');
-  const resultDiv = document.getElementById('result');
-  
+
+  const submitButton = document.querySelector("#submitButton"); 
+  submitButton.disabled = true;
+  submitButton.textContent = "Submitting...";
+
+  const transactionType = document.querySelector("input[name='transactionType']:checked")?.value;
+  const expenseMode = document.querySelector("input[name='expenseMode']:checked")?.value || "";
+  const amount = document.querySelector("input[name='amount']").value;
+  const category = document.getElementById("category").value;
+  const categoryValue = document.getElementById("categoryValue").value;
+  const additionalInfo = document.querySelector("input[name='additionalInfo']").value || "";
+
+  if (!transactionType || !amount) {
+    document.getElementById("result").textContent = "Transaction type and amount are required.";
+    submitButton.disabled = false;
+    submitButton.textContent = "Submit";
+    return;
+  }
+
+  const payload = {
+    authToken: "Rakesh9869",  
+    transactionType,
+    expenseMode,
+    amount,
+    category,
+    categoryValue,
+    additionalInfo
+  };
+
+  const formData = new URLSearchParams();
+  formData.append("authToken", payload.authToken);
+  formData.append("transactionType", payload.transactionType);
+  formData.append("expenseMode", payload.expenseMode);
+  formData.append("amount", payload.amount);
+  formData.append("category", payload.category);
+  formData.append("categoryValue", payload.categoryValue);
+  formData.append("additionalInfo", payload.additionalInfo);
+
   try {
-    // Get form values
-    const formData = {
-      authToken: "Rakesh9869",
-      transactionType: document.querySelector('input[name="transactionType"]:checked')?.value,
-      expenseMode: document.querySelector('input[name="expenseMode"]:checked')?.value || '',
-      amount: document.getElementById('amount').value,
-      category: document.getElementById('category').value,
-      categoryValue: document.getElementById('categoryValue').value,
-      additionalInfo: document.getElementById('additionalInfo').value || ''
-    };
-
-    // Validate required fields
-    if (!formData.transactionType || !formData.amount || !formData.category || !formData.categoryValue) {
-      showMessage('All required fields must be filled', 'error');
-      return;
-    }
-
-    // Show loading state
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Submitting...';
-    resultDiv.style.display = 'none';
-
-    // Send to Google Script
-    const response = await fetch('https://script.google.com/macros/s/AKfycbxfnsjylsIyAM39N1-WMvxOer6DMuNpoA6A4cBwVy4efqkxyBAeoNlhxaaVhWmNmSPr/exec', {
-      method: 'POST',
-      mode: "no-cors",
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
+    const response = await fetch("https://script.google.com/macros/s/AKfycbx_wHyePe_GKAA9YBmpccIyPkYrKikyfosaWmhVJxZH1_MActOeD0IETvVIhnu2g_-O/exec", {
+      method: "POST",
+      body: formData,
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Server error');
-    }
-
     const result = await response.json();
-    showMessage(result.message || 'Entry saved successfully!', 'success');
-    
-    // Reset form
-    document.getElementById('expenseForm').reset();
-    document.getElementById('categoryValue').innerHTML = '<option value="">-- Select Category First --</option>';
-
-  } catch (error) {
-    showMessage(error.message || 'Failed to save entry. Please try again.', 'error');
-    console.error('Submission error:', error);
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Submit';
+    document.getElementById("result").textContent = result.message || "Entry submitted successfully.";
+    document.getElementById("expenseForm").reset();
+    document.getElementById("category").innerHTML = "<option>-- Select Category --</option>";
+    document.getElementById("categoryValue").innerHTML = "<option>-- Select Category First --</option>";
+    document.getElementById("category").disabled = false;
+    document.getElementById("categoryValue").disabled = false;
+  } catch (err) {
+    document.getElementById("result").textContent = "Error submitting entry. Try again.";
+    console.error(err);
+  }
+  finally {
+    submitButton.disabled = false;
+    submitButton.textContent = "Submit";
   }
 });
 
-// Helper function to show messages
-function showMessage(message, type) {
-  const resultDiv = document.getElementById('result');
-  resultDiv.textContent = message;
-  resultDiv.className = alert ${type};
-  resultDiv.style.display = 'block';
-
-  // Hide message after 5 seconds
-  setTimeout(() => {
-    resultDiv.style.display = 'none';
-  }, 5000);
-}
+// Handle Clear button
+document.getElementById("clearButton").addEventListener("click", function () {
+  document.getElementById("expenseForm").reset();
+  document.getElementById("category").innerHTML = "<option>-- Select Category --</option>";
+  document.getElementById("categoryValue").innerHTML = "<option>-- Select Category First --</option>";
+  document.getElementById("category").disabled = false;
+  document.getElementById("categoryValue").disabled = false;
+  document.getElementById("result").textContent = "";
+});
