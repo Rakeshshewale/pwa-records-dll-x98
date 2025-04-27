@@ -24,25 +24,60 @@
     <form id="expenseForm" class="space-y-4">
 
       <!-- Transaction Type -->
-      <div>
-        <label class="block text-sm font-medium mb-1">Transaction Type<span class="text-red-500">*</span></label>
-        <div class="flex flex-wrap gap-4">
-          <label><input type="radio" name="transactionType" value="Expense" required /> Expense</label>
-          <label><input type="radio" name="transactionType" value="Money transfer" /> Money Transfer</label>
-          <label><input type="radio" name="transactionType" value="Credit card bill" /> Credit Card Bill</label>
-        </div>
+<div>
+  <label class="block text-sm font-medium mb-1">Transaction Type<span class="text-red-500">*</span></label>
+  <div id="transactionTypeGroup" class="flex flex-wrap gap-2">
+    <label class="cursor-pointer">
+      <input type="radio" name="transactionType" value="Expense" class="hidden peer" required />
+      <div class="px-4 py-2 border rounded-lg peer-checked:bg-indigo-600 peer-checked:text-white">
+        Expense
       </div>
+    </label>
+    <label class="cursor-pointer">
+      <input type="radio" name="transactionType" value="Money transfer" class="hidden peer" />
+      <div class="px-4 py-2 border rounded-lg peer-checked:bg-indigo-600 peer-checked:text-white">
+        Money Transfer
+      </div>
+    </label>
+    <label class="cursor-pointer">
+      <input type="radio" name="transactionType" value="Credit card bill" class="hidden peer" />
+      <div class="px-4 py-2 border rounded-lg peer-checked:bg-indigo-600 peer-checked:text-white">
+        Credit Card Bill
+      </div>
+    </label>
+  </div>
+</div>
 
       <!-- Expense Mode -->
-      <div id="expenseModeSection">
-        <label class="block text-sm font-medium mb-1">Expense Mode</label>
-        <div class="flex flex-wrap gap-4">
-          <label><input type="radio" name="expenseMode" value="UPI" /> UPI</label>
-          <label><input type="radio" name="expenseMode" value="Credit card" /> Credit Card</label>
-          <label><input type="radio" name="expenseMode" value="E-wallet" /> E-Wallet</label>
-          <label><input type="radio" name="expenseMode" value="Cash" /> Cash</label>
-        </div>
+<div id="expenseModeSection" class="mt-4 hidden">
+  <label class="block text-sm font-medium mb-1">Expense Mode</label>
+  <div id="expenseModeGroup" class="flex flex-wrap gap-2">
+    <label class="cursor-pointer">
+      <input type="radio" name="expenseMode" value="UPI" class="hidden peer" />
+      <div class="px-4 py-2 border rounded-lg peer-checked:bg-indigo-600 peer-checked:text-white">
+        UPI
       </div>
+    </label>
+    <label class="cursor-pointer">
+      <input type="radio" name="expenseMode" value="Credit card" class="hidden peer" />
+      <div class="px-4 py-2 border rounded-lg peer-checked:bg-indigo-600 peer-checked:text-white">
+        Credit Card
+      </div>
+    </label>
+    <label class="cursor-pointer">
+      <input type="radio" name="expenseMode" value="E-wallet" class="hidden peer" />
+      <div class="px-4 py-2 border rounded-lg peer-checked:bg-indigo-600 peer-checked:text-white">
+        E-Wallet
+      </div>
+    </label>
+    <label class="cursor-pointer">
+      <input type="radio" name="expenseMode" value="Cash" class="hidden peer" />
+      <div class="px-4 py-2 border rounded-lg peer-checked:bg-indigo-600 peer-checked:text-white">
+        Cash
+      </div>
+    </label>
+  </div>
+</div>
 
       <!-- Category -->
       <div>
