@@ -45,7 +45,7 @@ document.querySelectorAll("input[name='transactionType']").forEach(radio => {
 
     if (selectedTransaction === "Expense") {
       const expenseCategories = [
-        "Shopping", "Food", "Transportation", "Bills", "Entertainment",
+        "Food","Shopping","Transportation", "Bills", "Entertainment",
         "Personal care", "Insurance", "Other Expenses"
       ];
       expenseCategories.forEach(cat => {
